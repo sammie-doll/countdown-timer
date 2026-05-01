@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Countdown Timer</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #FFF9FA;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: auto;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      color: #2D1B22;
+    }
+
+    h1 span {
+      display: block;
+      font-size: 0.875rem;
+      color: #999;
+      font-weight: 400;
+      margin-top: 0.15rem;
+    }
+
+    .new-btn {
+      padding: 0.6rem 1.25rem;
+      background: #E639AF;
+      color: white;
+      border: none;
+      border-radius: 999px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .form-box {
+      background: white;
+      border: 1px solid #fce4ec;
+      border-radius: 20px;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+      display: none;
+    }
+
+    .form-box.show {
+      display: block;
+    }
+
+    .form-box h3 {
+      font-size: 1rem;
+      color: #2D1B22;
+      margin-bottom: 1rem;
+    }
+
+    .form-box input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid #fce4ec;
+      border-radius: 12px;
+      font-size: 0.875rem;
+      color: #2D1B22;
+      margin-bottom: 0.75rem;
+      outline: none;
+    }
+
+    .form-box input:focus {
+      border-color: #E639AF;
+    }
+
+    .form-box button {
+      width: 100%;
+      padding: 0.85rem;
+      background: #E639AF;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .timers {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .timer-card {
+      background: #2D1B22;
+      border-radius: 24px;
+      padding: 1.5rem;
+      color: white;
+      position: relative;
+    }
+
+    .timer-card .del-btn {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: #f9a8d4;
+      cursor: pointer;
+      border-radius: 8px;
+      width: 32px;
+      height: 32px;
+      font-size: 1rem;
+    }
+
+    .timer-card .del-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .timer-card .label {
+      color: #f9a8d4;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.25rem;
+    }
+
+    .timer-card h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+      padding-right: 2rem;
+    }
+
+    .digits {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .digit-box {
+      text-align: center;
+    }
+
+    .digit-box .num {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 0.5rem 0.85rem;
+      font-size: 2rem;
+      font-weight: 700;
+      min-width: 60px;
+      display: inline-block;
+    }
+
+    .digit-box .unit {
+      font-size: 0.7rem;
+      color: #f9a8d4;
+      margin-top: 0.35rem;
+      text-transform: uppercase;
+    }
+
+    .done-msg {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #E639AF;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 4rem 0;
+      color: #ccc;
+      font-size: 0.875rem;
+    }
+
+    .empty .empty-icon {
+      font-size: 3rem;
+      margin-bottom: 0.75rem;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <div>
+        <h1>Countdown Timer <span>Track your important moments ⏳</span></h1>
+      </div>
+      <button class="new-btn" onclick="toggleForm()">+ New</button>
+    </div>
+
+    <div class="form-box" id="formBox">
+      <h3>Add Countdown</h3>
+      <input type="text" id="eventName" placeholder="Event name..." />
+      <input type="datetime-local" id="eventDate" />
+      <button onclick="addTimer()">Start Countdown</button>
+    </div>
+
+    <div class="timers" id="timers"></div>
+  </div>
+
+  <script>
+    let timers = [
+      { id: 1, name: 'New Year 2027 🎆', date: '2027-01-01T00:00:00' },
+      { id: 2, name: 'My Birthday 🎂', date: '2026-08-15T00:00:00' },
+    ];
+    const intervals = {};
+
+    function toggleForm() {
+      const f = document.getElementById('formBox');
+      f.classList.toggle('show');
+    }
+
+    function addTimer() {
+      const name = document.getElementById('eventName').value.trim();
+      const date = document.getElementById('eventDate').value;
+      if (!name || !date) return alert('Please fill in both fields!');
+      timers.push({ id: Date.now(), name, date });
+      document.getElementById('eventName').value = '';
+      document.getElementById('eventDate').value = '';
+      document.getElementById('formBox').classList.remove('show');
+      render();
+    }
+
+    function deleteTimer(id) {
+      clearInterval(intervals[id]);
+      delete intervals[id];
+      timers = timers.filter(t => t.id !== id);
+      render();
+    }
+
+    function pad(n) { return String(n).padStart(2, '0'); }
+
+    function render() {
+      const container = document.getElementById('timers');
+      if (timers.length === 0) {
+        container.innerHTML = `<div class="empty"><div class="empty-icon">⏰</div><p>No countdowns yet.<br/>Click "+ New" to add one!</p></div>`;
+        return;
+      }
+      container.innerHTML = timers.map(t => `
+      <div class="timer-card" id="card-${t.id}">
+        <button class="del-btn" onclick="deleteTimer(${t.id})">🗑</button>
+        <p class="label">Counting down to</p>
+        <h3>${t.name}</h3>
+        <div class="digits" id="digits-${t.id}"></div>
+      </div>
+    `).join('');
+      timers.forEach(t => startTimer(t));
+    }
+
+    function startTimer(t) {
+      clearInterval(intervals[t.id]);
+      function update() {
+        const diff = new Date(t.date) - new Date();
+        const el = document.getElementById(`digits-${t.id}`);
+        if (!el) return clearInterval(intervals[t.id]);
+        if (diff <= 0) {
+          el.innerHTML = '<span class="done-msg">🎉 Time\'s Up!</span>';
+          clearInterval(intervals[t.id]);
+          return;
+        }
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const secs = Math.floor((diff % (1000 * 60)) / 1000);
+        el.innerHTML = [
+          { v: days, l: 'Days' }, { v: hours, l: 'Hrs' }, { v: mins, l: 'Min' }, { v: secs, l: 'Sec' }
+        ].map(d => `<div class="digit-box"><span class="num">${pad(d.v)}</span><p class="unit">${d.l}</p></div>`).join('');
+      }
+      update();
+      intervals[t.id] = setInterval(update, 1000);
+    }
+
+    render();
+  </script>
+</body>
+
+</html>
